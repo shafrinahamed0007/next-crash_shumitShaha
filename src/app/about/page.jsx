@@ -1,6 +1,11 @@
 import React from "react";
 // throw new Error("There was a huge error!");
 
+export const metadata = {
+  title: "About us",
+  description: "This is a blog About page",
+};
+
 const AboutPage = () => {
   return (
     <div>
