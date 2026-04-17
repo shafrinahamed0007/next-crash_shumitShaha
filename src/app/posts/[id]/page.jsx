@@ -2,6 +2,9 @@
 import { notFound } from "next/navigation";
 import getPost from "../../../../lib/getPost";
 import getComments from "../../../../lib/getPostComment";
+import Comments from "@/app/components/Comments";
+import { Suspense } from "react";
+import getAllPosts from "../../../../lib/getAllPosts";
 
 export async function generateMetadata({ params }) {
   const { id } = await params;
@@ -19,7 +22,8 @@ export default async function PostPage({ params }) {
   const postPromise = await getPost(id);
   const commentPromise = await getComments(id);
 
-  const [post, comments] = await Promise.all([postPromise, commentPromise]);
+  // const [post, comments] = await Promise.all([postPromise, commentPromise]);
+  const post = await postPromise;
 
   if (!post || !post.id) {
     return notFound();
@@ -31,14 +35,19 @@ export default async function PostPage({ params }) {
       <h2 className="text-blue-500 text-xl font-semibold">{post?.title}</h2>
       <p className="mt-3">{post?.body}</p>
       <hr />
-      <div className="mt-10">
-        <h2>Comments</h2>
-        <ul>
-          {
-            comments.map(comment => <li className="mb-2" key={comment.id}>{comment?.body}</li>)
-          }
-        </ul>
-      </div>
+      <Suspense fallback="<h1>Loading Comments...</h1>">
+        {" "}
+        <Comments promise={commentPromise} />
+      </Suspense>
     </div>
   );
+}
+
+export async function generateStaticParams(){
+  const posts = await getAllPosts();
+
+  return posts.map(post => ({
+    id: post.id.toString(),
+
+  }));
 }
